@@ -1,0 +1,62 @@
+services:
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    restart: unless-stopped
+
+    ports:
+      - "27017:27017"
+
+    volumes:
+      - mongo-data:/data/db
+
+    networks:
+      - hayroo-network
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+
+    container_name: hayroo-backend
+    restart: unless-stopped
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      DATABASE: mongodb://mongodb:27017/ecommerce
+
+    depends_on:
+      - mongodb
+
+    networks:
+      - hayroo-network
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+
+    container_name: hayroo-frontend
+    restart: unless-stopped
+
+    ports:
+      - "3000:3000"
+
+    depends_on:
+      - backend
+
+    stdin_open: true
+    tty: true
+
+    networks:
+      - hayroo-network
+
+volumes:
+  mongo-data:
+
+networks:
+  hayroo-network:
+    driver: bridge
