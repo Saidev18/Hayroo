@@ -1,11 +1,22 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'Node22'
+    }
+
     stages {
 
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Node Version') {
+            steps {
+                sh 'node --version'
+                sh 'npm --version'
             }
         }
 
@@ -23,49 +34,6 @@ pipeline {
                     sh 'npm run build'
                 }
             }
-        }
-
-        stage('Backend Install') {
-            steps {
-                dir('server') {
-                    sh 'npm install'
-                }
-            }
-        }
-
-        stage('Backend Test') {
-            steps {
-                dir('server') {
-                    sh 'echo "Backend Ready"'
-                }
-            }
-        }
-
-        stage('Docker Build Frontend') {
-            steps {
-                sh 'docker build -t hayroo-frontend:latest ./client'
-            }
-        }
-
-        stage('Docker Build Backend') {
-            steps {
-                sh 'docker build -t hayroo-backend:latest ./server'
-            }
-        }
-
-    }
-
-    post {
-        always {
-            echo 'Pipeline Finished'
-        }
-
-        success {
-            echo 'Build Successful'
-        }
-
-        failure {
-            echo 'Build Failed'
         }
     }
 }
