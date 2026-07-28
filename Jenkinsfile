@@ -41,16 +41,17 @@ pipeline {
     }
 
     post {
-        always {
-            echo 'Pipeline finished.'
-        }
-
-        success {
-            echo 'Frontend build completed successfully!'
-        }
-
-        failure {
-            echo 'Frontend build failed.'
-        }
+    always {
+        echo 'Pipeline finished.'
     }
+
+    success {
+        archiveArtifacts artifacts: 'client/build/**', fingerprint: true
+        echo 'Frontend build archived successfully!'
+    }
+
+    failure {
+        echo 'Frontend build failed.'
+    }
+}
 }
