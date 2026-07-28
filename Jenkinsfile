@@ -31,9 +31,26 @@ pipeline {
         stage('Frontend Build') {
             steps {
                 dir('client') {
-                    sh 'npm run build'
+                    sh '''
+                        export NODE_OPTIONS=--openssl-legacy-provider
+                        npm run build
+                    '''
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished.'
+        }
+
+        success {
+            echo 'Frontend build completed successfully!'
+        }
+
+        failure {
+            echo 'Frontend build failed.'
         }
     }
 }
