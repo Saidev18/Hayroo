@@ -38,15 +38,17 @@ pipeline {
                 }
             }
         }
-    }
-
-    stage('Build Docker Image') {
-    steps {
-        dir('client') {
-            sh 'docker build -t hayroo-frontend:latest .'
+	 stage('Build Docker Image') {
+    		steps {
+        		dir('client') {
+            			sh 'docker build -t hayroo-frontend:latest .'
         }
     }
-} 
+}
+
+
+
+    } 
 
     post {
     always {
