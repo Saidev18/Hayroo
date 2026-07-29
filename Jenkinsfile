@@ -79,6 +79,15 @@ pipeline {
                 }
             }
         }
+        
+        stage('Test Kubernetes Access') {
+    steps {
+        sh '''
+            kubectl get nodes
+            kubectl get deployments
+        '''
+    		}
+	}	
     }
 
     post {
