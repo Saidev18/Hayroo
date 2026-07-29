@@ -5,6 +5,10 @@ pipeline {
         nodejs 'Node18'
     }
 
+    environment {
+        IMAGE_NAME = 'chakkadocker/hayroo-frontend:latest'
+    }
+
     stages {
 
         stage('Checkout') {
@@ -38,30 +42,45 @@ pipeline {
                 }
             }
         }
-	 stage('Build Docker Image') {
-    		steps {
-        		dir('client') {
-            			sh 'docker build -t hayroo-frontend:latest .'
+
+        stage('Docker Build') {
+            steps {
+                dir('client') {
+                    sh 'docker build -t $IMAGE_NAME .'
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        docker push $IMAGE_NAME
+                        docker logout
+                    '''
+                }
+            }
         }
     }
-}
-
-
-
-    } 
 
     post {
-    always {
-        echo 'Pipeline finished.'
-    }
+        always {
+            echo 'Pipeline finished.'
+        }
 
-    success {
-        archiveArtifacts artifacts: 'client/build/**', fingerprint: true
-        echo 'Frontend build archived successfully!'
-    }
+        success {
+            archiveArtifacts artifacts: 'client/build/**', fingerprint: true
+            echo 'Docker image pushed successfully!'
+        }
 
-    failure {
-        echo 'Frontend build failed.'
+        failure {
+            echo 'Pipeline failed.'
+        }
     }
-}
 }
