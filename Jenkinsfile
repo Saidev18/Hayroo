@@ -6,7 +6,8 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = 'chakkadocker/hayroo-frontend:latest'
+        FRONTEND_IMAGE = 'chakkadocker/hayroo-frontend:latest'
+        BACKEND_IMAGE  = 'chakkadocker/hayroo-backend:latest'
     }
 
     stages {
@@ -43,15 +44,23 @@ pipeline {
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Frontend Docker Image') {
             steps {
                 dir('client') {
-                    sh 'docker build -t $IMAGE_NAME .'
+                    sh 'docker build -t $FRONTEND_IMAGE .'
                 }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Build Backend Docker Image') {
+            steps {
+                dir('server') {
+                    sh 'docker build -t $BACKEND_IMAGE .'
+                }
+            }
+        }
+
+        stage('Push Images to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -61,7 +70,10 @@ pipeline {
 
                     sh '''
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                        docker push $IMAGE_NAME
+
+                        docker push $FRONTEND_IMAGE
+                        docker push $BACKEND_IMAGE
+
                         docker logout
                     '''
                 }
@@ -76,7 +88,7 @@ pipeline {
 
         success {
             archiveArtifacts artifacts: 'client/build/**', fingerprint: true
-            echo 'Docker image pushed successfully!'
+            echo 'Frontend and Backend images pushed successfully!'
         }
 
         failure {
