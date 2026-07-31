@@ -80,14 +80,27 @@ pipeline {
             }
         }
         
-        stage('Test Kubernetes Access') {
+stage('Deploy Frontend') {
     steps {
         sh '''
-            kubectl get nodes
-            kubectl get deployments
+            kubectl set image deployment/frontend \
+            frontend=$FRONTEND_IMAGE
+
+            kubectl rollout status deployment/frontend
         '''
-    		}
-	}	
+    }
+}	
+
+stage('Deploy Backend') {
+    steps {
+        sh '''
+            kubectl set image deployment/backend \
+            backend=$BACKEND_IMAGE
+
+            kubectl rollout status deployment/backend
+        '''
+    }
+}
     }
 
     post {
