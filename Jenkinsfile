@@ -6,6 +6,7 @@ pipeline {
     }
 
     environment {
+    	KUBECONFIG = "/home/saidev/.kube/config"
         FRONTEND_IMAGE = 'chakkadocker/hayroo-frontend:latest'
         BACKEND_IMAGE  = 'chakkadocker/hayroo-backend:latest'
     }
@@ -83,21 +84,25 @@ pipeline {
 stage('Deploy Frontend') {
     steps {
         sh '''
-            kubectl set image deployment/frontend \
-            frontend=$FRONTEND_IMAGE
+            kubectl --kubeconfig=/home/saidev/.kube/config \
+                set image deployment/frontend \
+                frontend=$FRONTEND_IMAGE
 
-            kubectl rollout status deployment/frontend
+            kubectl --kubeconfig=/home/saidev/.kube/config \
+                rollout status deployment/frontend
         '''
     }
-}	
+}
 
 stage('Deploy Backend') {
     steps {
         sh '''
-            kubectl set image deployment/backend \
-            backend=$BACKEND_IMAGE
+            kubectl --kubeconfig=/home/saidev/.kube/config \
+                set image deployment/backend \
+                backend=$BACKEND_IMAGE
 
-            kubectl rollout status deployment/backend
+            kubectl --kubeconfig=/home/saidev/.kube/config \
+                rollout status deployment/backend
         '''
     }
 }
