@@ -21,7 +21,7 @@ spec:
       - name: frontend
 
         image: hayroo-frontend:latest
-        imagePullPolicy: Never
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 80

@@ -22,7 +22,7 @@ spec:
 
         image: hayroo-backend:latest
 
-        imagePullPolicy: Never
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 8000
