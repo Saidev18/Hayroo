@@ -7,8 +7,10 @@ pipeline {
 
     environment {
     	KUBECONFIG = "/home/saidev/.kube/config"
-        FRONTEND_IMAGE = 'chakkadocker/hayroo-frontend:latest'
-        BACKEND_IMAGE  = 'chakkadocker/hayroo-backend:latest'
+    IMAGE_TAG = "${BUILD_NUMBER}"
+
+    FRONTEND_IMAGE = "chakkadocker/hayroo-frontend:${IMAGE_TAG}"
+    BACKEND_IMAGE = "chakkadocker/hayroo-backend:${IMAGE_TAG}"
     }
 
     stages {
@@ -42,7 +44,8 @@ pipeline {
                         npm run build
                     '''
                 }
-            }
+            }git add .
+
         }
 
         stage('Build Frontend Docker Image') {
