@@ -96,18 +96,20 @@ pipeline {
             }
         }
 
-        stage('Deploy Frontend') {
-            steps {
-                sh '''
-                    kubectl --kubeconfig=$KUBECONFIG \
-                        set image deployment/frontend \
-                        frontend=$FRONTEND_IMAGE
+stage('Deploy Frontend') {
+    steps {
+        sh '''
+            kubectl --kubeconfig=/home/saidev/.kube/config get nodes
 
-                    kubectl --kubeconfig=$KUBECONFIG \
-                        rollout status deployment/frontend
-                '''
-            }
-        }
+            kubectl --kubeconfig=/home/saidev/.kube/config \
+            set image deployment/frontend \
+            frontend=$FRONTEND_IMAGE
+
+            kubectl --kubeconfig=/home/saidev/.kube/config \
+            rollout status deployment/frontend
+        '''
+    }
+}
 
         stage('Deploy Backend') {
             steps {
