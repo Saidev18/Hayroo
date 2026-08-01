@@ -6,11 +6,15 @@ pipeline {
     }
 
     environment {
-    	KUBECONFIG = "/home/saidev/.kube/config"
-    IMAGE_TAG = "${BUILD_NUMBER}"
+        KUBECONFIG = "/home/saidev/.kube/config"
 
-    FRONTEND_IMAGE = "chakkadocker/hayroo-frontend:${IMAGE_TAG}"
-    BACKEND_IMAGE = "chakkadocker/hayroo-backend:${IMAGE_TAG}"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+
+        FRONTEND_IMAGE = "chakkadocker/hayroo-frontend:${IMAGE_TAG}"
+        BACKEND_IMAGE  = "chakkadocker/hayroo-backend:${IMAGE_TAG}"
+
+        FRONTEND_LATEST = "chakkadocker/hayroo-frontend:latest"
+        BACKEND_LATEST  = "chakkadocker/hayroo-backend:latest"
     }
 
     stages {
@@ -44,14 +48,16 @@ pipeline {
                         npm run build
                     '''
                 }
-            }git add .
-
+            }
         }
 
         stage('Build Frontend Docker Image') {
             steps {
                 dir('client') {
-                    sh 'docker build -t $FRONTEND_IMAGE .'
+                    sh '''
+                        docker build -t $FRONTEND_IMAGE .
+                        docker tag $FRONTEND_IMAGE $FRONTEND_LATEST
+                    '''
                 }
             }
         }
@@ -59,7 +65,10 @@ pipeline {
         stage('Build Backend Docker Image') {
             steps {
                 dir('server') {
-                    sh 'docker build -t $BACKEND_IMAGE .'
+                    sh '''
+                        docker build -t $BACKEND_IMAGE .
+                        docker tag $BACKEND_IMAGE $BACKEND_LATEST
+                    '''
                 }
             }
         }
@@ -76,39 +85,42 @@ pipeline {
                         echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
                         docker push $FRONTEND_IMAGE
+                        docker push $FRONTEND_LATEST
+
                         docker push $BACKEND_IMAGE
+                        docker push $BACKEND_LATEST
 
                         docker logout
                     '''
                 }
             }
         }
-        
-stage('Deploy Frontend') {
-    steps {
-        sh '''
-            kubectl --kubeconfig=/home/saidev/.kube/config \
-                set image deployment/frontend \
-                frontend=$FRONTEND_IMAGE
 
-            kubectl --kubeconfig=/home/saidev/.kube/config \
-                rollout status deployment/frontend
-        '''
-    }
-}
+        stage('Deploy Frontend') {
+            steps {
+                sh '''
+                    kubectl --kubeconfig=$KUBECONFIG \
+                        set image deployment/frontend \
+                        frontend=$FRONTEND_IMAGE
 
-stage('Deploy Backend') {
-    steps {
-        sh '''
-            kubectl --kubeconfig=/home/saidev/.kube/config \
-                set image deployment/backend \
-                backend=$BACKEND_IMAGE
+                    kubectl --kubeconfig=$KUBECONFIG \
+                        rollout status deployment/frontend
+                '''
+            }
+        }
 
-            kubectl --kubeconfig=/home/saidev/.kube/config \
-                rollout status deployment/backend
-        '''
-    }
-}
+        stage('Deploy Backend') {
+            steps {
+                sh '''
+                    kubectl --kubeconfig=$KUBECONFIG \
+                        set image deployment/backend \
+                        backend=$BACKEND_IMAGE
+
+                    kubectl --kubeconfig=$KUBECONFIG \
+                        rollout status deployment/backend
+                '''
+            }
+        }
     }
 
     post {
@@ -118,7 +130,7 @@ stage('Deploy Backend') {
 
         success {
             archiveArtifacts artifacts: 'client/build/**', fingerprint: true
-            echo 'Frontend and Backend images pushed successfully!'
+            echo 'Frontend and Backend images built, pushed and deployed successfully!'
         }
 
         failure {
