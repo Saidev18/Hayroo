@@ -20,7 +20,7 @@ spec:
       containers:
       - name: frontend
 
-        image: hayroo-frontend:latest
+        image: chakkadocker/hayroo-frontend:latest
         imagePullPolicy: Always
 
         ports:

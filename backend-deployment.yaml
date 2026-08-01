@@ -20,7 +20,7 @@ spec:
       containers:
       - name: backend
 
-        image: hayroo-backend:latest
+        image: chakkadocker/hayroo-backend:latest
 
         imagePullPolicy: Always
 
